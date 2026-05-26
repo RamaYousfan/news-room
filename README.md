@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📰 News Room API
 
 RESTful API built with Laravel following clean architecture principles using:
@@ -519,3 +520,6 @@ Models
 # Author
 
 Developed using Laravel Clean Architecture principles.
+=======
+# news-room
+>>>>>>> e321227623376a3338c639333e17d1d2a368142a
