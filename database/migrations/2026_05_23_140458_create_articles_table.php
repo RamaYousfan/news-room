@@ -32,7 +32,7 @@ $table->timestamp('published_at')->nullable();
 $table->timestamps();
 $table->index('status');
 $table->index('published_at');
-
+$table->softDeletes();
 });
     }
 

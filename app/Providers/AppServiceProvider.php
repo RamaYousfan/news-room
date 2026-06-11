@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Article;
 use App\Observers\ArticleObserver;
+use App\Repositories\AttachmentRepository;
+use App\Repositories\Contracts\AttachmentRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-
+$this->app->bind(
+    AttachmentRepositoryInterface::class,
+    AttachmentRepository::class
+);
     }
 
     /**
