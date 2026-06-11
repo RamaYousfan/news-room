@@ -10,37 +10,27 @@ class UpdateArticleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->user()?->hasRole('admin')
-            || auth()->user()?->hasRole('writer');
+        return auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('writer');
     }
 
     protected function prepareForValidation()
     {
         if ($this->has('title')) {
-
             $this->merge([
-                'title' => trim(
-                    ucfirst($this->title)
-                )
+                'title' => trim(ucfirst($this->title))
             ]);
-
         }
     }
 
     public function rules(): array
     {
         return [
-
             'title' => [
                 'sometimes',
                 'string',
                 'min:10',
-                Rule::unique(
-                    'articles',
-                    'title'
-                )->ignore(
-                    $this->route('article')
-                )
+                Rule::unique('articles', 'title')
+                    ->ignore($this->route('article'))
             ],
 
             'content' => [
@@ -51,22 +41,11 @@ class UpdateArticleRequest extends FormRequest
 
             'status' => [
                 'sometimes',
-                Rule::in([
-                    'draft',
-                    'published',
-                    'archived'
-                ])
+                Rule::in(['draft', 'published', 'archived'])
             ],
 
-            'tags' => [
-                'sometimes',
-                'array'
-            ],
-
-            'tags.*' => [
-                'exists:tags,id'
-            ]
-
+            'tags' => ['sometimes', 'array'],
+            'tags.*' => ['exists:tags,id']
         ];
     }
 }

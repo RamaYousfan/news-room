@@ -1,15 +1,20 @@
 <?php
 
 namespace App\Http\Controllers\Api\V1;
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Article\StoreArticleRequest;
 use App\Http\Requests\Article\UpdateArticleRequest;
-use App\Http\Resources\V1\ArticleResource;
+ use App\Http\Resources\V1\ArticleResource;
 use App\Services\Article\ArticleService;
+ use App\Mail\ArticlePublishedMail;
+use App\Jobs\NotifySubscribersJob;
+use App\Models\Article;
+use App\Traits\ApiResponse;
+use Illuminate\Support\Facades\Mail;
 
 class ArticleController extends Controller
-{
+{     use AuthorizesRequests, ApiResponse;
     public function __construct(
         protected ArticleService $articleService
     ) {}
@@ -17,11 +22,7 @@ class ArticleController extends Controller
 
     public function index()
     {
-        return ArticleResource::collection(
-
-            $this->articleService->getAll()
-
-        );
+ return $this->success(ArticleResource::collection($this->articleService->getAll()),'Articles retrieved');
     }
 
 
@@ -40,78 +41,43 @@ class ArticleController extends Controller
     )
     {
 
-        $article =
-
-        $this->articleService
-
-        ->create(
-
-            $request->validated()
-
-        );
+        $article = $this->articleService->create( $request->validated() );
 
 
-        return new ArticleResource(
-
-            $article
-
-        );
+        return new ArticleResource( $article);
 
     }
 
 
 
-    public function update(
-
-        UpdateArticleRequest $request,
-
-        $id
-
-    )
+    public function update(UpdateArticleRequest $request, $id )
     {
 
-        $article =
-
-        $this->articleService
-
-        ->update(
-
-            $id,
-
-            $request->validated()
-
-        );
-
-
-        return new ArticleResource(
-
-            $article
-
-        );
+        $article =$this->articleService->update($id,$request->validated()  );
+        return new ArticleResource($article);
 
     }
 
+public function destroy($id)
+{
+    $this->articleService->delete($id);
+
+    return response()->json(['message' => 'Deleted' ], 200);
+}
 
 
-    public function destroy($id)
-    {
+    
+    public function publish(Article $article)
+{
+    $this->authorize('publish', $article);
 
-        $this->articleService->delete(
+    $article->update(['status' => 'published']);
 
-            $id
+    Mail::to($article->user->email)
+        ->queue(new ArticlePublishedMail($article));
 
-        );
+    dispatch(new NotifySubscribersJob($article));
 
-
-        return response()->json([
-
-            'message'
-
-            =>
-
-            'Deleted'
-
-        ]);
-
-    }
+   return $this->success(null, 'Article published successfully');
+}
 }

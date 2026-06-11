@@ -16,25 +16,12 @@ extends FormRequest
     {
 
         /** @var User|null $user */
-        $user =
-        Auth::user();
+        $user =Auth::user();
 
 
         return
 
-        $user?->hasRole(
-
-            'admin'
-
-        )
-
-        ||
-
-        $user?->hasRole(
-
-            'writer'
-
-        );
+     $user?->hasRole('admin')|| $user?->hasRole('writer');
 
     }
 

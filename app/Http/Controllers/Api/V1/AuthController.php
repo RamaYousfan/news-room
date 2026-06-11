@@ -7,9 +7,10 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Traits\ApiResponse;
 
 class AuthController extends Controller
-{
+{   use ApiResponse;
     public function login(LoginRequest $request)
     {
         $user = User::where('email', $request->email)->first();
@@ -21,10 +22,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token
-        ]);
+     return $this->success([
+    'user' => $user,
+    'token' => $token],
+    'Login successful');
     }
 
     public function logout()
@@ -38,7 +39,6 @@ class AuthController extends Controller
     if($user){ $user->currentAccessToken()?->delete(); }
 
 
-    return response()->json([ 'message'=>'Logged out' ]);
-
+return $this->success(null, 'Logged out');
 }
 }

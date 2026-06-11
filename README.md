@@ -1,139 +1,39 @@
-<<<<<<< HEAD
 # 📰 News Room API
 
-RESTful API built with Laravel following clean architecture principles using:
-
-- Repository Pattern
-- Service Layer
-- API Versioning (V1 / V2)
-- Authentication with Sanctum
-- Roles & Permissions with Spatie
-- Events & Listeners
-- Queue & Redis
-- Notifications
-- Policies & Middleware
-- Form Requests & Custom Validation Rules
-- Resources
-- Observers
-- Commands & Scheduling
+A RESTful News Management API built with Laravel using Clean Architecture principles and modern Laravel features.
 
 ---
 
-# 📌 Features
+# 🚀 Features
 
-### Authentication
-- Login
-- Logout
-- Sanctum Token Authentication
-
-Endpoints:
-
-POST
-
-/api/v1/login
-
-POST
-
-/api/v1/logout
-
----
-
-### Roles & Permissions (Spatie)
-
-Supported roles:
-
-- admin
-- writer
-- reader
-
-Permissions controlled using:
-
-```php
-HasRoles
-assignRole()
-hasRole()
-```
-
-Role middleware:
-
-```php
-role:admin
-role:writer
-```
-
----
-
-### Articles
-
-Supports:
-
-- Create article
-- Update article
-- Delete article
-- Show article
-- List articles
-
-Relations:
-
-Article →
-
-- User (Author)
-- Comments
-- Tags
-- Attachments
-
----
-
-### Comments
-
-Polymorphic relation:
-
-```php
-commentable()
-```
-
-Supports comments on:
-
-- Articles
-
----
-
-### Attachments
-
-Polymorphic relation:
-
-```php
-attachable()
-```
-
----
-
-### Tags
-
-Many To Many Polymorphic:
-
-```php
-taggable
-```
-
-Used with:
-
-- Articles
-- Users
+* Authentication with Laravel Sanctum
+* Roles & Permissions using Spatie Permission
+* API Versioning (V1 / V2)
+* Repository Pattern
+* Service Layer
+* Form Requests Validation
+* API Resources
+* Policies & Authorization
+* Events & Listeners
+* Queues & Jobs
+* Notifications
+* Redis Cache & Queue
+* File Attachments
+* Automated Testing with Pest
 
 ---
 
 # 🏗 Architecture
 
-Project follows:
+The project follows a layered architecture:
 
 ```txt
 Controller
-↓
+   ↓
 Service Layer
-↓
+   ↓
 Repository Layer
-↓
+   ↓
 Model
 ```
 
@@ -141,87 +41,224 @@ Example:
 
 ```txt
 ArticleController
-↓
+   ↓
 ArticleService
-↓
+   ↓
 ArticleRepository
-↓
+   ↓
 Article Model
 ```
 
 ---
 
-# API Versioning
+# 🔐 Authentication
 
-Supported:
+Implemented using Laravel Sanctum.
 
-V1:
+### Login
 
-```txt
-/api/v1/*
+```http
+POST /api/v1/login
 ```
 
-V2:
+### Logout
 
-```txt
-/api/v2/*
+```http
+POST /api/v1/logout
 ```
 
-V2 adds:
+Authenticated requests require:
 
-- Request Logging
-- Rate Limiting
-- Extended Resources
+```txt
+Authorization: Bearer TOKEN
+```
 
 ---
 
-# Notifications
+# 👥 Roles & Permissions
+
+Implemented using Spatie Permission.
+
+Available Roles:
+
+* admin
+* writer
+* reader
+
+Common Permissions:
+
+* Create Articles
+* Update Articles
+* Publish Articles
+* Delete Articles
+* Add Comments
+
+---
+
+# 📝 Articles
+
+Supported Operations:
+
+* Create Article
+* List Articles
+* Show Article Details
+* Update Article
+* Delete Article
+* Publish Article
+
+Endpoint:
+
+```http
+/api/v1/articles
+```
+
+Publish Endpoint:
+
+```http
+POST /api/v1/articles/{article}/publish
+```
+
+Relations:
+
+```txt
+Article
+ ├── User
+ ├── Comments
+ ├── Attachments
+ └── Tags
+```
+
+---
+
+# 💬 Comments
+
+Supports commenting on articles.
+
+Endpoint:
+
+```http
+POST /api/v1/comments
+```
+
+Features:
+
+* Reader can add comments
+* Notifications sent to article owner
+* No self-notifications
+
+Relationship:
+
+```php
+commentable()
+```
+
+---
+
+# 📎 Attachments
+
+Supports uploading files to articles.
+
+Allowed Types:
+
+* pdf
+* jpg
+* jpeg
+* png
+
+Endpoint:
+
+```http
+POST /api/v1/articles/{article}/attachments
+```
+
+Relationship:
+
+```php
+attachable()
+```
+
+Files are stored using Laravel Storage.
+
+---
+
+# 🏷 Tags
+
+Polymorphic Many-To-Many Relationship.
+
+Relationship:
+
+```php
+taggable()
+```
+
+Used with:
+
+* Articles
+* Users
+
+---
+
+# 🔔 Notifications
 
 Implemented:
 
-Admin:
-
-Database Notification
+### New Comment Notification
 
 Writer:
 
-Email Notification
+```txt
+mail
+```
 
-Notifications triggered when:
-
-Article status:
+Admin:
 
 ```txt
-published
+database
+```
+
+Triggered when:
+
+```txt
+New comment is added
 ```
 
 ---
 
-# Events & Listeners
+# 📨 Mail
 
-Events:
+Implemented Mailables:
 
-- ArticlePublished
-- ArticleUpdated
-- UserRegistered
+### ArticlePublishedMail
 
-Listeners:
+Sent when:
 
-- SendArticleNotification
-- ClearDashboardCache
-- SendWelcomeEmail
+```txt
+Article status becomes published
+```
+
+Subject:
+
+```txt
+Article Published
+```
 
 ---
 
-# Queue
+# ⚙ Jobs & Queues
 
-Queue driver:
+Implemented:
+
+### NotifySubscribersJob
+
+Queued after publishing an article.
+
+Queue Driver:
 
 ```env
 QUEUE_CONNECTION=redis
 ```
 
-Run worker:
+Run Worker:
 
 ```bash
 php artisan queue:work
@@ -229,21 +266,104 @@ php artisan queue:work
 
 ---
 
-# Redis Cache
+# ⚡ Events & Listeners
 
-Configured:
+Events:
 
-```env
-CACHE_STORE=redis
-```
+* ArticlePublished
+* ArticleUpdated
+* UserRegistered
 
-Used for:
+Listeners:
 
-Dashboard cache clearing
+* SendArticleNotification
+* ClearDashboardCache
+* SendWelcomeEmail
 
 ---
 
-# Observers
+# 🛡 Policies
+
+Implemented:
+
+### ArticlePolicy
+
+Supported Actions:
+
+* view
+* update
+* delete
+* publish
+
+Authorization based on:
+
+* Ownership
+* User Role
+* Article Status
+
+---
+
+# ✅ Validation
+
+Implemented using Form Requests.
+
+Examples:
+
+```txt
+StoreArticleRequest
+UpdateArticleRequest
+StoreCommentRequest
+StoreAttachmentRequest
+LoginRequest
+```
+
+Custom Rules:
+
+```txt
+ValidArticleContent
+```
+
+---
+
+# 📦 API Resources
+
+### V1 Resources
+
+```txt
+App\Http\Resources\V1
+```
+
+### V2 Resources
+
+```txt
+App\Http\Resources\V2
+```
+
+V2 includes additional fields such as:
+
+* comments_count
+* tags
+* reading_time
+
+---
+
+# 💾 Redis
+
+Used for:
+
+* Queue Processing
+* Cache Storage
+
+Configuration:
+
+```env
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis
+```
+
+---
+
+# 👀 Observers
 
 Implemented:
 
@@ -251,123 +371,84 @@ Implemented:
 ArticleObserver
 ```
 
-Triggers:
+Handles:
 
-- ArticlePublished event
-- ArticleUpdated event
+* Article Published Events
+* Article Updated Events
 
 ---
 
-# Policies
+# 🧪 Automated Testing
 
-Implemented:
+Testing framework:
 
 ```txt
-ArticlePolicy
+Pest PHP
 ```
 
-Supports:
+Implemented Test Suites:
 
-- view
-- update
-- delete
-
-Authorization based on:
-
-- ownership
-- admin role
-- published status
-
----
-
-# Validation
-
-Uses:
-
-Form Requests:
-
-- StoreArticleRequest
-- UpdateArticleRequest
-- LoginRequest
-
-Custom Rule:
+### Feature Tests
 
 ```txt
-ValidArticleContent
+tests/Feature
+
+├── ArticleManagementTest.php
+├── CommentSystemTest.php
+├── ArticlePublishingTest.php
+├── AttachmentUploadTest.php
+└── ApiResponseStructureTest.php
 ```
 
-Requires:
+Covered Scenarios:
 
-Minimum content length
+* Authentication & Authorization
+* Article CRUD
+* Article Publishing
+* Validation Rules
+* Comments System
+* Notifications
+* Attachment Upload
+* API Response Structure
 
----
-
-# Resources
-
-Implemented:
-
-V1:
+### Unit Tests
 
 ```txt
-App\Http\Resources\V1
+tests/Unit
+
+├── ArticlePublishedMailTest.php
+├── NewCommentNotificationTest.php
+└── NotifySubscribersJobTest.php
 ```
 
-V2:
+Covered Scenarios:
 
-```txt
-App\Http\Resources\V2
-```
+* Mail Construction
+* Notification Channels
+* Job Initialization
 
-V2 includes:
-
-- comments_count
-- tags
-- reading_time
-
----
-
-# Commands
-
-Custom Commands:
-
-Archive articles:
+Run Tests:
 
 ```bash
-php artisan articles:archive
+php artisan test
 ```
 
-Generate report:
+or
 
 ```bash
-php artisan articles:report
+./vendor/bin/pest
 ```
 
 ---
 
-# Scheduling
-
-Commands can be scheduled using:
-
-```bash
-php artisan schedule:list
-```
-
-Run scheduler:
-
-```bash
-php artisan schedule:work
-```
-
----
-
-# Database Seeders
+# 🌱 Seeders
 
 Included:
 
-- UserSeeder
-- TagSeeder
-- ArticleSeeder
-- CommentSeeder
+* UserSeeder
+* TagSeeder
+* ArticleSeeder
+* CommentSeeder
 
 Run:
 
@@ -375,16 +456,16 @@ Run:
 php artisan migrate:fresh --seed
 ```
 
-Default users:
+Default Accounts:
 
-Admin:
+### Admin
 
 ```txt
 admin@test.com
 password
 ```
 
-Writer:
+### Writer
 
 ```txt
 writer@test.com
@@ -393,51 +474,51 @@ password
 
 ---
 
-# Installation
+# 🛠 Installation
 
-Clone:
+Clone Repository:
 
 ```bash
-git clone repo-url
+git clone <repository-url>
 ```
 
-Install:
+Install Dependencies:
 
 ```bash
 composer install
 ```
 
-Copy env:
+Copy Environment File:
 
 ```bash
 cp .env.example .env
 ```
 
-Generate key:
+Generate Key:
 
 ```bash
 php artisan key:generate
 ```
 
-Run migrations:
+Run Migrations:
 
 ```bash
 php artisan migrate
 ```
 
-Seed:
+Seed Database:
 
 ```bash
 php artisan db:seed
 ```
 
-Run server:
+Run Application:
 
 ```bash
 php artisan serve
 ```
 
-Queue:
+Run Queue Worker:
 
 ```bash
 php artisan queue:work
@@ -445,81 +526,28 @@ php artisan queue:work
 
 ---
 
-# Testing API
-
-Login:
-
-POST
+# 📂 Project Structure
 
 ```txt
-/api/v1/login
-```
-
-Create article:
-
-POST
-
-```txt
-/api/v1/articles
-```
-
-Headers:
-
-```txt
-Authorization:
-Bearer TOKEN
-```
-
-Logout:
-
-POST
-
-```txt
-/api/v1/logout
+app
+├── Console
+├── Events
+├── Jobs
+├── Listeners
+├── Mail
+├── Models
+├── Notifications
+├── Observers
+├── Policies
+├── Repositories
+├── Resources
+├── Rules
+├── Services
+└── Traits
 ```
 
 ---
 
-# Main Packages Used
+# 👨‍💻 Author
 
-Laravel Sanctum:
-
-Authentication
-
-Spatie Permission:
-
-Roles & Permissions
-
-Redis:
-
-Queue + Cache
-
----
-
-# Project Structure
-
-```txt
-Controllers
-Services
-Repositories
-Policies
-Observers
-Events
-Listeners
-Notifications
-Middleware
-Resources
-Rules
-Commands
-Providers
-Models
-```
-
----
-
-# Author
-
-Developed using Laravel Clean Architecture principles.
-=======
-# news-room
->>>>>>> e321227623376a3338c639333e17d1d2a368142a
+Developed using Laravel Clean Architecture principles with testing, authorization, notifications, queues, and scalable API design.
